@@ -83,4 +83,3 @@ Every command invokes the `codegraph` orchestrator agent, which **always** calls
 ## Updating the CodeGraph-first rule
 
 Edit `skills/cg-core/SKILL.md` first (the canonical source), then copy the HARD RULE block into the top of each workflow skill.
-# agent-workspace-metis

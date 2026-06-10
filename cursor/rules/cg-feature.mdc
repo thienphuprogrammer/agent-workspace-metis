@@ -1,0 +1,65 @@
+---
+description: Feature implementation workflow using CodeGraph — use when adding new functionality, building a new capability, or extending an existing system. Enforces codegraph_explore → callees → impact before writing any code.
+globs:
+alwaysApply: false
+---
+
+# cg-feature
+
+## HARD RULE — applies to ALL workflows
+
+Before ANY analysis, edit, or answer:
+
+1. **MUST** call `codegraph_explore` with keywords from the request — no exceptions.
+2. **MUST NOT** call `Read` or `Grep` on indexed source files — use `codegraph_node` instead.
+3. **MUST** call `codegraph_impact` before editing any symbol.
+4. Only fall back to `Read`/`Grep` when codegraph returns "not initialized", for non-indexed files (configs, docs, lock files), or when a tool response starts with ⚠️ (staleness banner — that file is pending re-index).
+
+## Tool Selection Cheat-Sheet
+
+| Intent | Tool |
+|---|---|
+| Understand a flow / find relevant symbols | `codegraph_explore` |
+| Find where a named symbol is defined | `codegraph_search` |
+| Read one symbol's source + who calls it | `codegraph_node` |
+| Read a source file (replaces the Read tool) | `codegraph_node` with file path, no symbol |
+| Who calls function X? | `codegraph_callers` |
+| What does function X call? | `codegraph_callees` |
+| What breaks if I change X? | `codegraph_impact` |
+| List files in a directory | `codegraph_files` |
+| Is the index healthy / initialized? | `codegraph_status` |
+
+## Flow
+
+### Step 1 — Explore existing context (REQUIRED FIRST)
+Call `codegraph_explore` with the feature domain keywords.
+Goal: understand what already exists, find the extension points.
+
+### Step 2 — Map callees of insertion points
+Call `codegraph_callees` on the symbols where new code will plug in.
+Goal: understand what the insertion point already calls so the new code fits the pattern.
+
+### Step 3 — Survey related files
+Call `codegraph_files` on the relevant directory.
+Goal: find where analogous features live (use them as templates).
+
+### Step 4 — Design (write before coding)
+Write a 2-3 sentence description: what the feature does, what it touches, what it returns.
+Identify: new symbols to create, existing symbols to extend.
+
+### Step 5 — Check impact on extension points
+Call `codegraph_impact` on every existing symbol you will modify.
+Review: who else calls this? Will adding a parameter / changing behavior break them?
+
+### Step 6 — Implement
+Write the new code following patterns from analogous symbols found in Step 3.
+
+### Step 7 — Write tests
+Write tests before or immediately after implementation.
+
+## Output Format
+
+**Context:** [explore results — existing symbols, extension points, analogous features]
+**Analysis:** [design decision — what to create, what to extend, why]
+**Action:** [code written / diff]
+**Verification:** [test command + expected output]
